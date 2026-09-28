@@ -1,4 +1,4 @@
-export function check_role(...roles){
+export function checkRole(...roles){
     return (req,res,next)=>{
         //get role 
         const role=req.user.role

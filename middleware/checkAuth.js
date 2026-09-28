@@ -1,18 +1,14 @@
 import { createDB } from "../db.js"
 const db=createDB()
-export const check_auth=async(req,res,next)=>{
-        const session_id =req.cookies.node_api_session
+export const checkAuth=async(req,res,next)=>{
+        const token =req.cookies.node_api_token
 
         try{
         //check if i have this session un my database
-        const data =await db.getAll("session")
-        const session=data.find((s)=>s.sessionid===session_id)
 
-        if(!session){
-            return res.status(401).json({ error: "invalid token" })
-        }  
-        req.user=session
-            next()
+        req.user=jwt.verify(token,process.env.JWT_SECRET)
+
+            return next()
         }
         catch{
             return res.status(401).json({ error: "invalid token" })

@@ -3,11 +3,11 @@ import { createDB } from "../db.js"
 import {cart_schema} from "../schema/cart.schema.js"
 import { validate } from "../middleware/validateBody.js"
 
-export const cart_app= Router()
+export const cartRouter= Router()
 const db=createDB()
 
 
-cart_app.get("/",async(req,res)=>{
+cartRouter.get("/",async(req,res)=>{
     const carts =await db.getAll("carts")
     const cart=carts.find((p)=>p.userId===req.user.id)
     if(!cart){
@@ -18,7 +18,7 @@ cart_app.get("/",async(req,res)=>{
     })
 
 
-cart_app.post("/",validate(cart_schema),async(req,res)=>{
+cartRouter.post("/",validate(cart_schema),async(req,res)=>{
     //validate data
     //get all carts
     const carts =await db.getAll("carts")
@@ -40,7 +40,7 @@ cart_app.post("/",validate(cart_schema),async(req,res)=>{
 
 })
 
-cart_app.patch("/:productId",async(req,res)=>{
+cartRouter.patch("/:productId",async(req,res)=>{
     //get product by id 
     const id = req.params.productId
     //find the cart 
@@ -52,7 +52,7 @@ cart_app.patch("/:productId",async(req,res)=>{
     res.status(200).json({ "message": "cart updated", "data": { ...check } })
 })
 
-cart_app.delete("/:productId",async(req,res)=>{
+cartRouter.delete("/:productId",async(req,res)=>{
     const product_Id=req.params.productId
     //get all cart 
     const data=await db.getAll("carts")
