@@ -11,7 +11,7 @@ cartRouter.get("/",async(req,res)=>{
     const carts =await db.getAll("carts")
     const cart=carts.find((p)=>p.userId===req.user.id)
     if(!cart){
-        return res.status(200).json({ "data": { "id": null, "userId": "...", "products": [] } })
+        return res.status(200).json({ "data": { "id": null, "userId": req.user.id, "products": [] } })
     }
     res.status(200).json({     "data":cart     })    
     
@@ -25,17 +25,23 @@ cartRouter.post("/",validate(cart_schema),async(req,res)=>{
     //pick our cart
     const cart=carts.find((p)=>p.userId===req.user.id)
     if(!cart){
-        const newcart =await db.create("carts",{  userId: req.user.id,
-                products: [req.body]
+        const newcart =await db.create("carts",{       userId: req.user.id,
+            products: [req.body]
         })
         return res.status(201).json({ "message": "product added to cart", "data": { ...newcart } })
     }
     //get the pruduct that that has this (id)
     const product =cart.products.find((x)=>x.id==req.body.id) //req.body.id) the product id
     //modify the quantity
+    if(product){
     product.quantity+=req.body.quantity
+    }
+    else{//i can`t write product because in this case it will be undifind  
+        cart.products.push(req.body)
+    }
         await db.update("carts",cart.id,{products:cart.products  })//cart is the cart what we have modified so we replace it 
         return res.status(201).json({ "message": "product added to cart", "data": { ...cart } })
+    
     
 
 })
@@ -49,7 +55,7 @@ cartRouter.patch("/:productId",async(req,res)=>{
     const product=cart.products.find((x)=>x.id==id)
     product.quantity = req.body.quantity
     await db.update("carts",cart.id,{products:cart.products })
-    res.status(200).json({ "message": "cart updated", "data": { ...check } })
+    res.status(200).json({ "message": "cart updated", "data": { ...cart } })
 })
 
 cartRouter.delete("/:productId",async(req,res)=>{

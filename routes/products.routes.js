@@ -7,28 +7,30 @@ import {checkRole} from "../middleware/checkRole.js"
 
 export const productsRouter=Router()
 const db =createDB()
-productsRouter.get("/",async(req,res)=>{ 
-    res.status(200).json( await db.getAll("products"))
-})
+productsRouter.get("/", async (req, res) => {
+
+    let products = await db.getAll("products")
+    const q = req.query.search?.toLowerCase()
+    if (q) {
+        products = products.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q)
+        )
+    }
+    return res.status(200).json({ data: products })
+    })
 productsRouter.get("/:id",async(req,res)=>{
     const id =req.params.id
     const data=await db.getById("products",id)
     if(!data){
         return res.status(404).json({ "error": "product not found" })
     }
-    res.status(200).json(data)
+    return res.status(200).json(data)
 })
-productsRouter.get("/",async(req,res)=>{
-    const name =req.query.search 
-    const data=await db.getOne("products",name)
-    if(!data){
-        return res.status(404).json({ "error": "product not found" })
-    }
-    res.status(200).json(data)
-})
+
 productsRouter.post("/",checkAuth,checkRole("merchant"),validate(product_sch),async(req,res)=>{
     await db.create("products",req.body)
-    res.status(201).json({
+    return res.status(201).json({
     "message": "product created successfully"
     })
 }) 
@@ -40,7 +42,7 @@ productsRouter.patch("/:id",checkAuth,checkRole("merchant"),async(req,res)=>{
         return res.status(404).json({"error":"not found "})
     }
     await db.update("products",id,req.body)
-    res.status(200).json({
+    return res.status(200).json({
     "message": "product updated successfully",
     "data": req.body 
 })

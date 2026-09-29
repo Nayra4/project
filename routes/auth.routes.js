@@ -56,18 +56,10 @@ await db.create("auth_users",{
     }
 
     //create token
-    const session = {
-        id: checking.id,
-        email: req.body.email,
-        role: checking.role,
-        username: req.body.username,
-    };
-    const session_id = crypto.randomBytes(16).toString("hex");
-    await db.create("session", { sessionid: session_id, ...session });
 
     const token = jwt.sign(
         { id: checking.id, role: checking.role, email: checking.email },
-        process.env.SECRET_KEY,
+        process.env.JWT_SECRET,
         {
         expiresIn: "1h",
         },
@@ -93,13 +85,6 @@ await db.create("auth_users",{
 
 authRouter.post("/logout",async(req,res)=>{
 
-    // const session_id =req.cookies.node_api_token
-    // const sessions=await db.getAll("session")
-    // const check=sessions.find((x)=>x.sessionid===session_id)
-    // if(!check){
-    //     return res.status(401).json({"error":"not allowed"})
-    // }
-    // await db.delete("session",check.id)
     res.clearCookie("node_api_token")
     return res.status(200).json({ "message": "logout successful" })
 })
